@@ -1,0 +1,21 @@
+{
+  "name": "quiz-platform",
+  "version": "1.0.0",
+  "description": "神经网络知识答题平台",
+  "main": "index.html",
+  "scripts": {
+    "build": "node build.js",
+    "serve": "npx http-server dist -p 8080",
+    "preview": "npx http-server dist -p 8080 -o"
+  },
+  "keywords": [
+    "quiz",
+    "education",
+    "neural-network"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

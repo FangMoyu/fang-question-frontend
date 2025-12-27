@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>神经网络知识答题平台</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 首页 -->
+        <div id="homePage" class="page active">
+            <header class="header">
+                <h1>神经网络知识答题平台</h1>
+                <p class="subtitle">选择练习模式开始答题</p>
+            </header>
+
+            <div class="mode-selection">
+                <h2>选择练习模式</h2>
+                <div class="mode-buttons">
+                    <button class="mode-btn" onclick="startRandomMode()">
+                        <div class="mode-icon">🎲</div>
+                        <div class="mode-title">随机练习</div>
+                        <div class="mode-desc">从所有题目中随机抽取</div>
+                    </button>
+                </div>
+
+                <h2>或选择章节练习</h2>
+                <div class="chapter-grid" id="chapterList">
+                    <!-- 章节列表将通过JS动态生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 答题页面 -->
+        <div id="quizPage" class="page">
+            <div class="quiz-header">
+                <button class="back-btn" onclick="goHome()">← 返回</button>
+                <div class="quiz-info">
+                    <span id="chapterTitle" class="chapter-title"></span>
+                    <span id="progressInfo" class="progress-info"></span>
+                </div>
+                <div class="score-display">
+                    得分: <span id="currentScore">0</span>
+                </div>
+            </div>
+
+            <div class="question-container">
+                <div class="question-header">
+                    <span id="questionType" class="question-type"></span>
+                    <span id="questionNumber" class="question-number"></span>
+                </div>
+                <div id="questionText" class="question-text"></div>
+                <div id="questionImage" class="question-image"></div>
+
+                <div id="optionsContainer" class="options-container">
+                    <!-- 选项将通过JS动态生成 -->
+                </div>
+
+                <div id="feedbackContainer" class="feedback-container hidden">
+                    <div id="feedbackIcon" class="feedback-icon"></div>
+                    <div id="feedbackText" class="feedback-text"></div>
+                    <div id="correctAnswer" class="correct-answer"></div>
+                    <button class="next-btn" onclick="nextQuestion()">下一题 →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 结果页面 -->
+        <div id="resultPage" class="page">
+            <div class="result-container">
+                <h1 class="result-title">练习完成！</h1>
+
+                <div class="result-stats">
+                    <div class="stat-card">
+                        <div class="stat-label">总题数</div>
+                        <div id="totalQuestions" class="stat-value">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">正确</div>
+                        <div id="correctCount" class="stat-value correct">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">错误</div>
+                        <div id="wrongCount" class="stat-value wrong">0</div>
+                    </div>
+                    <div class="stat-card large">
+                        <div class="stat-label">正确率</div>
+                        <div id="accuracy" class="stat-value">0%</div>
+                    </div>
+                </div>
+
+                <div class="result-actions">
+                    <button class="action-btn primary" onclick="goHome()">返回首页</button>
+                    <button class="action-btn secondary" onclick="retryMode()">再来一次</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="questions.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
