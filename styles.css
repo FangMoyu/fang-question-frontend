@@ -695,3 +695,36 @@ body {
     opacity: 0.5;
     cursor: not-allowed;
 }
+
+/* ============ 答题导航按钮样式 ============ */
+.quiz-navigation {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.quiz-prev-btn,
+.quiz-next-btn {
+    flex: 1;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.quiz-prev-btn:hover:not(:disabled),
+.quiz-next-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.quiz-prev-btn:disabled,
+.quiz-next-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

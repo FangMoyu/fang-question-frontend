@@ -8,6 +8,7 @@ let wrongAnswers = 0;
 let selectedOptions = [];
 let isAnswered = false;
 let currentMode = null; // 'chapter' 或 'random'
+let questionStates = []; // 存储每道题的答题状态
 
 // 复习模式变量
 let reviewQuestions = [];
@@ -140,6 +141,12 @@ function startQuiz() {
     score = 0;
     correctAnswers = 0;
     wrongAnswers = 0;
+    // 初始化每道题的状态
+    questionStates = currentQuestions.map(() => ({
+        answered: false,
+        selectedOptions: [],
+        isCorrect: false
+    }));
 
     showPage('quizPage');
     document.getElementById('chapterTitle').textContent = currentChapter;
@@ -150,8 +157,16 @@ function startQuiz() {
 // 加载题目
 function loadQuestion() {
     const question = currentQuestions[currentQuestionIndex];
-    isAnswered = false;
-    selectedOptions = [];
+    const state = questionStates[currentQuestionIndex];
+
+    // 如果该题已答过，恢复状态
+    if (state.answered) {
+        isAnswered = true;
+        selectedOptions = [...state.selectedOptions];
+    } else {
+        isAnswered = false;
+        selectedOptions = [];
+    }
 
     // 更新题目信息
     const typeNames = {
@@ -186,11 +201,84 @@ function loadQuestion() {
         imageContainer.style.display = 'none';
     }
 
-    // 清空反馈
-    document.getElementById('feedbackContainer').classList.add('hidden');
-
     // 渲染选项
     renderOptions(question);
+
+    // 如果已答过，恢复选项状态和显示反馈
+    if (state.answered) {
+        restoreAnsweredState(question, state);
+    } else {
+        document.getElementById('feedbackContainer').classList.add('hidden');
+        // 新题目时隐藏导航按钮
+        const navContainer = document.querySelector('.quiz-navigation');
+        if (navContainer) {
+            navContainer.style.display = 'none';
+        }
+    }
+
+    // 更新导航按钮状态
+    updateQuizNavigation();
+}
+
+// 恢复已答题状态
+function restoreAnsweredState(question, state) {
+    const options = document.querySelectorAll('.option');
+
+    // 恢复选中状态
+    options.forEach((opt, i) => {
+        if (state.selectedOptions.includes(i)) {
+            opt.classList.add('selected');
+            const radio = opt.querySelector('.option-radio');
+            if (radio) radio.classList.add('selected');
+        }
+    });
+
+    // 禁用所有选项
+    options.forEach(opt => opt.classList.add('disabled'));
+
+    // 禁用提交按钮
+    const submitBtn = document.querySelector('.submit-btn');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.5';
+        submitBtn.style.cursor = 'not-allowed';
+    }
+
+    // 标记正确答案
+    const correctAnswer = question.answer;
+    if (question.type === 'singleChoice' || question.type === 'judgment') {
+        const correctIndex = correctAnswer.charCodeAt(0) - 65;
+        if (options[correctIndex]) {
+            options[correctIndex].classList.add('correct');
+        }
+    } else {
+        const correctArray = Array.isArray(correctAnswer) ? correctAnswer : [correctAnswer];
+        correctArray.forEach(letter => {
+            const index = letter.charCodeAt(0) - 65;
+            if (options[index]) {
+                options[index].classList.add('correct');
+            }
+        });
+    }
+
+    // 标记错误选项
+    if (!state.isCorrect) {
+        state.selectedOptions.forEach(i => {
+            const letter = String.fromCharCode(65 + i);
+            if (!isCorrectAnswer(question, letter)) {
+                options[i].classList.add('wrong');
+            }
+        });
+    }
+
+    // 显示反馈
+    showFeedback(state.isCorrect, question, false);
+
+    // 显示导航按钮
+    const navContainer = document.querySelector('.quiz-navigation');
+    if (navContainer) {
+        navContainer.style.display = 'flex';
+    }
 }
 
 // 渲染选项
@@ -293,13 +381,20 @@ function submitAnswer() {
                    selectedArray.every((val, i) => val === correctSorted[i]);
     }
 
+    // 保存答题状态
+    questionStates[currentQuestionIndex] = {
+        answered: true,
+        selectedOptions: [...selectedOptions],
+        isCorrect: isCorrect
+    };
+
     // 显示结果
     if (isCorrect) {
         correctAnswers++;
         score += 5;
-        showFeedback(true, question, true); // 传入true表示自动跳转
+        showFeedback(true, question, true);
         // 正确答案后延迟自动跳转
-        setTimeout(() => nextQuestion(), 800);
+        setTimeout(() => nextQuizQuestion(), 800);
     } else {
         wrongAnswers++;
         showFeedback(false, question, false);
@@ -344,7 +439,7 @@ function showFeedback(isCorrect, question, autoSkip = false) {
     const icon = document.getElementById('feedbackIcon');
     const text = document.getElementById('feedbackText');
     const correctDiv = document.getElementById('correctAnswer');
-    const nextBtn = container.querySelector('.next-btn');
+    const navContainer = container.querySelector('.quiz-navigation');
 
     container.classList.remove('hidden', 'correct', 'wrong');
     container.classList.add(isCorrect ? 'correct' : 'wrong');
@@ -353,15 +448,15 @@ function showFeedback(isCorrect, question, autoSkip = false) {
 
     if (autoSkip) {
         text.textContent = '回答正确！即将进入下一题...';
-        // 隐藏下一题按钮
-        if (nextBtn) {
-            nextBtn.style.display = 'none';
+        // 隐藏导航按钮
+        if (navContainer) {
+            navContainer.style.display = 'none';
         }
     } else {
         text.textContent = isCorrect ? '回答正确！' : '回答错误';
-        // 显示下一题按钮
-        if (nextBtn) {
-            nextBtn.style.display = 'block';
+        // 显示导航按钮
+        if (navContainer) {
+            navContainer.style.display = 'flex';
         }
     }
 
@@ -378,14 +473,84 @@ function showFeedback(isCorrect, question, autoSkip = false) {
     }
 }
 
-// 下一题
+// 下一题（自动完成检测）
 function nextQuestion() {
-    currentQuestionIndex++;
-
-    if (currentQuestionIndex >= currentQuestions.length) {
+    // 检查是否所有题都已答完
+    const allAnswered = questionStates.every(state => state.answered);
+    if (allAnswered) {
         showResult();
-    } else {
+        return;
+    }
+
+    // 找到下一道未答的题
+    for (let i = currentQuestionIndex + 1; i < currentQuestions.length; i++) {
+        if (!questionStates[i].answered) {
+            currentQuestionIndex = i;
+            loadQuestion();
+            return;
+        }
+    }
+
+    // 如果后面的题都已答完，检查前面有没有未答的
+    for (let i = 0; i < currentQuestionIndex; i++) {
+        if (!questionStates[i].answered) {
+            currentQuestionIndex = i;
+            loadQuestion();
+            return;
+        }
+    }
+
+    // 所有题都答完了
+    showResult();
+}
+
+// 上一题（答题模式导航）
+function prevQuizQuestion() {
+    if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
         loadQuestion();
+    }
+}
+
+// 下一题（答题模式导航）
+function nextQuizQuestion() {
+    if (currentQuestionIndex < currentQuestions.length - 1) {
+        currentQuestionIndex++;
+        loadQuestion();
+    } else {
+        // 如果是最后一题，检查是否全部答完
+        const allAnswered = questionStates.every(state => state.answered);
+        if (allAnswered) {
+            showResult();
+        }
+    }
+}
+
+// 更新答题导航按钮状态
+function updateQuizNavigation() {
+    const prevBtn = document.querySelector('.quiz-prev-btn');
+    const nextBtn = document.querySelector('.quiz-next-btn');
+
+    if (!prevBtn || !nextBtn) return;
+
+    prevBtn.disabled = currentQuestionIndex === 0;
+    prevBtn.style.opacity = currentQuestionIndex === 0 ? '0.5' : '1';
+    prevBtn.style.cursor = currentQuestionIndex === 0 ? 'not-allowed' : 'pointer';
+
+    // 最后一题时，如果全部答完则禁用下一题按钮
+    const isLast = currentQuestionIndex === currentQuestions.length - 1;
+    const allAnswered = questionStates.every(state => state.answered);
+
+    if (isLast && allAnswered) {
+        nextBtn.disabled = true;
+        nextBtn.style.opacity = '0.5';
+        nextBtn.style.cursor = 'not-allowed';
+        nextBtn.textContent = '完成';
+    } else {
+        nextBtn.disabled = false;
+        nextBtn.style.opacity = '1';
+        nextBtn.style.cursor = 'pointer';
+        nextBtn.textContent = '下一题 →';
     }
 }
 
