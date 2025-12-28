@@ -16,6 +16,10 @@ let reviewQuestionIndex = 0;
 let reviewChapter = null;
 let reviewMode = null; // 'random' 或 'chapter'
 
+// 题型练习变量
+let currentType = null; // 'singleChoice', 'multipleChoice', 'judgment'
+let typeMode = null; // 'random' 或 'chapter'
+
 // 初始化应用
 function init() {
     renderChapterList();
@@ -742,6 +746,148 @@ function nextReviewQuestion() {
         reviewQuestionIndex++;
         loadReviewQuestion();
     }
+}
+
+// ============ 题型练习功能 ============
+
+// 显示题型选择页面
+function showTypeSelectionPage() {
+    showPage('typePage');
+    updateTypeCounts();
+}
+
+// 更新各题型题目数量
+function updateTypeCounts() {
+    const counts = getTypeCounts();
+    document.getElementById('singleCount').textContent = `${counts.singleChoice} 题`;
+    document.getElementById('multipleCount').textContent = `${counts.multipleChoice} 题`;
+    document.getElementById('judgmentCount').textContent = `${counts.judgment} 题`;
+}
+
+// 获取各题型题目总数
+function getTypeCounts() {
+    const counts = {
+        singleChoice: 0,
+        multipleChoice: 0,
+        judgment: 0
+    };
+
+    for (const chapter in questionsData) {
+        const data = questionsData[chapter];
+        if (data.singleChoice) counts.singleChoice += data.singleChoice.length;
+        if (data.multipleChoice) counts.multipleChoice += data.multipleChoice.length;
+        if (data.judgment) counts.judgment += data.judgment.length;
+    }
+
+    return counts;
+}
+
+// 显示题型模式选择页面（选择随机或章节）
+function showTypeModeSelection(type) {
+    currentType = type;
+    const typeNames = {
+        'singleChoice': '单选题',
+        'multipleChoice': '多选题',
+        'judgment': '判断题'
+    };
+    document.getElementById('typeModeTitle').textContent = typeNames[type] + '练习';
+    renderTypeChapterList(type);
+    showPage('typeModePage');
+}
+
+// 渲染题型章节列表
+function renderTypeChapterList(type) {
+    const chapterList = document.getElementById('typeChapterList');
+    chapterList.innerHTML = '';
+
+    for (const chapter in questionsData) {
+        const data = questionsData[chapter];
+        let count = 0;
+
+        if (type === 'singleChoice' && data.singleChoice) {
+            count = data.singleChoice.length;
+        } else if (type === 'multipleChoice' && data.multipleChoice) {
+            count = data.multipleChoice.length;
+        } else if (type === 'judgment' && data.judgment) {
+            count = data.judgment.length;
+        }
+
+        if (count === 0) continue;
+
+        const chapterDiv = document.createElement('div');
+        chapterDiv.className = 'chapter-card';
+
+        const btn = document.createElement('button');
+        btn.className = 'chapter-btn';
+        btn.onclick = () => startTypeChapterMode(chapter, type);
+        btn.innerHTML = `
+            <div class="chapter-name">${chapter}</div>
+            <div class="chapter-count">${count}题</div>
+        `;
+
+        chapterDiv.appendChild(btn);
+        chapterList.appendChild(chapterDiv);
+    }
+}
+
+// 开始题型随机模式
+function startTypeRandomMode() {
+    typeMode = 'random';
+    currentMode = 'type';
+    currentChapter = getTypeDisplayName(currentType) + '随机练习';
+    currentQuestions = getTypeQuestions(currentType, null);
+    shuffleArray(currentQuestions);
+
+    startQuiz();
+}
+
+// 开始题型章节模式
+function startTypeChapterMode(chapter, type) {
+    typeMode = 'chapter';
+    currentMode = 'type';
+    currentType = type;
+    currentChapter = chapter + ' - ' + getTypeDisplayName(type);
+    currentQuestions = getTypeQuestions(type, chapter);
+    shuffleArray(currentQuestions);
+
+    startQuiz();
+}
+
+// 获取题型显示名称
+function getTypeDisplayName(type) {
+    const names = {
+        'singleChoice': '单选题',
+        'multipleChoice': '多选题',
+        'judgment': '判断题'
+    };
+    return names[type] || type;
+}
+
+// 按题型获取题目（所有章节或指定章节）
+function getTypeQuestions(type, chapter) {
+    const questions = [];
+
+    if (chapter) {
+        // 指定章节
+        const data = questionsData[chapter];
+        if (data && data[type]) {
+            data[type].forEach(q => {
+                questions.push({ ...q, chapter, type });
+            });
+        }
+    } else {
+        // 所有章节
+        for (const ch in questionsData) {
+            const data = questionsData[ch];
+            if (data && data[type]) {
+                data[type].forEach(q => {
+                    questions.push({ ...q, chapter: ch, type });
+                });
+            }
+        }
+    }
+
+    return questions;
 }
 
 // 页面加载完成后初始化

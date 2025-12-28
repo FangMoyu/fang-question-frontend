@@ -28,6 +28,11 @@
                         <div class="mode-title">随机复习</div>
                         <div class="mode-desc">直接查看题目和答案</div>
                     </button>
+                    <button class="mode-btn type-btn" onclick="showTypeSelectionPage()">
+                        <div class="mode-icon">📝</div>
+                        <div class="mode-title">按题型练习</div>
+                        <div class="mode-desc">单选、多选、判断题专项</div>
+                    </button>
                 </div>
 
                 <h2>或选择章节练习</h2>
@@ -141,6 +146,50 @@
                 <div class="review-navigation">
                     <button class="nav-btn prev-btn" onclick="prevReviewQuestion()">← 上一题</button>
                     <button class="nav-btn next-btn" onclick="nextReviewQuestion()">下一题 →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 题型选择页面 -->
+        <div id="typePage" class="page">
+            <div class="type-selection-container">
+                <button class="back-btn-large" onclick="goHome()">← 返回首页</button>
+                <h1 class="type-title">选择题型</h1>
+                <div class="type-grid">
+                    <button class="type-card" onclick="showTypeModeSelection('singleChoice')">
+                        <div class="type-icon-single">A</div>
+                        <div class="type-card-title">单选题</div>
+                        <div class="type-card-desc" id="singleCount">加载中...</div>
+                    </button>
+                    <button class="type-card" onclick="showTypeModeSelection('multipleChoice')">
+                        <div class="type-icon-multiple">A</div>
+                        <div class="type-card-title">多选题</div>
+                        <div class="type-card-desc" id="multipleCount">加载中...</div>
+                    </button>
+                    <button class="type-card" onclick="showTypeModeSelection('judgment')">
+                        <div class="type-icon-judgment">✓</div>
+                        <div class="type-card-title">判断题</div>
+                        <div class="type-card-desc" id="judgmentCount">加载中...</div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 题型模式选择页面 -->
+        <div id="typeModePage" class="page">
+            <div class="type-mode-container">
+                <button class="back-btn-large" onclick="showTypeSelectionPage()">← 返回题型选择</button>
+                <h1 class="type-mode-title" id="typeModeTitle">单选题练习</h1>
+                <div class="type-mode-options">
+                    <button class="type-mode-btn" onclick="startTypeRandomMode()">
+                        <div class="type-mode-icon">🎲</div>
+                        <div class="type-mode-text">随机练习</div>
+                        <div class="type-mode-sub">从所有章节的该题型中随机抽取</div>
+                    </button>
+                </div>
+                <h2 class="type-chapter-title">或选择章节练习</h2>
+                <div class="chapter-grid" id="typeChapterList">
+                    <!-- 章节列表将通过JS动态生成 -->
                 </div>
             </div>
         </div>
