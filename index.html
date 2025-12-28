@@ -23,6 +23,11 @@
                         <div class="mode-title">随机练习</div>
                         <div class="mode-desc">从所有题目中随机抽取</div>
                     </button>
+                    <button class="mode-btn review-btn" onclick="startRandomReview()">
+                        <div class="mode-icon">📖</div>
+                        <div class="mode-title">随机复习</div>
+                        <div class="mode-desc">直接查看题目和答案</div>
+                    </button>
                 </div>
 
                 <h2>或选择章节练习</h2>
@@ -93,6 +98,46 @@
                 <div class="result-actions">
                     <button class="action-btn primary" onclick="goHome()">返回首页</button>
                     <button class="action-btn secondary" onclick="retryMode()">再来一次</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 复习页面 -->
+        <div id="reviewPage" class="page">
+            <div class="quiz-header">
+                <button class="back-btn" onclick="goHome()">← 返回</button>
+                <div class="quiz-info">
+                    <span id="reviewChapterTitle" class="chapter-title"></span>
+                    <span id="reviewProgressInfo" class="progress-info"></span>
+                </div>
+                <div class="review-mode-badge">复习模式</div>
+            </div>
+
+            <div class="question-container">
+                <div class="question-header">
+                    <span id="reviewQuestionType" class="question-type"></span>
+                    <span id="reviewQuestionNumber" class="question-number"></span>
+                </div>
+                <div id="reviewQuestionText" class="question-text"></div>
+                <div id="reviewQuestionImage" class="question-image"></div>
+
+                <div id="reviewOptionsContainer" class="review-options-container">
+                    <!-- 选项将通过JS动态生成 -->
+                </div>
+
+                <div class="review-section">
+                    <div class="review-section-title">正确答案</div>
+                    <div id="reviewAnswer" class="review-answer"></div>
+                </div>
+
+                <div class="review-section">
+                    <div class="review-section-title">解析</div>
+                    <div id="reviewExplanation" class="review-explanation"></div>
+                </div>
+
+                <div class="review-navigation">
+                    <button class="nav-btn prev-btn" onclick="prevReviewQuestion()">← 上一题</button>
+                    <button class="nav-btn next-btn" onclick="nextReviewQuestion()">下一题 →</button>
                 </div>
             </div>
         </div>

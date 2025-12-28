@@ -1050,7 +1050,7 @@ const questionsData = {
                 id: 14,
                 question: "多模态生成是指模型能同时处理多种类型的____。",
                 options: ["A. 输入", "B. 输出", "C. 参数", "D. 偏好"],
-                answer: ["A", "D"],
+                answer: ["A", "B"],
                 explanation: "多模态生成是指模型能同时处理多种类型的输入和输出。"
             },
             {

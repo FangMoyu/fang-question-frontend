@@ -9,6 +9,12 @@ let selectedOptions = [];
 let isAnswered = false;
 let currentMode = null; // 'chapter' 或 'random'
 
+// 复习模式变量
+let reviewQuestions = [];
+let reviewQuestionIndex = 0;
+let reviewChapter = null;
+let reviewMode = null; // 'random' 或 'chapter'
+
 // 初始化应用
 function init() {
     renderChapterList();
@@ -25,6 +31,9 @@ function renderChapterList() {
                          (data.multipleChoice?.length || 0) +
                          (data.judgment?.length || 0);
 
+        const chapterDiv = document.createElement('div');
+        chapterDiv.className = 'chapter-card';
+
         const btn = document.createElement('button');
         btn.className = 'chapter-btn';
         btn.onclick = () => startChapterMode(chapter);
@@ -32,7 +41,17 @@ function renderChapterList() {
             <div class="chapter-name">${chapter}</div>
             <div class="chapter-count">${totalCount}题</div>
         `;
-        chapterList.appendChild(btn);
+
+        // 添加复习按钮
+        const reviewBtn = document.createElement('button');
+        reviewBtn.className = 'chapter-review-btn';
+        reviewBtn.onclick = () => startChapterReview(chapter);
+        reviewBtn.innerHTML = '📖 复习';
+        reviewBtn.title = '复习此章节';
+
+        chapterDiv.appendChild(btn);
+        chapterDiv.appendChild(reviewBtn);
+        chapterList.appendChild(chapterDiv);
     }
 }
 
@@ -278,10 +297,12 @@ function submitAnswer() {
     if (isCorrect) {
         correctAnswers++;
         score += 5;
-        showFeedback(true, question);
+        showFeedback(true, question, true); // 传入true表示自动跳转
+        // 正确答案后延迟自动跳转
+        setTimeout(() => nextQuestion(), 800);
     } else {
         wrongAnswers++;
-        showFeedback(false, question);
+        showFeedback(false, question, false);
 
         // 标记正确答案
         if (question.type === 'singleChoice' || question.type === 'judgment') {
@@ -318,17 +339,31 @@ function isCorrectAnswer(question, letter) {
 }
 
 // 显示反馈
-function showFeedback(isCorrect, question) {
+function showFeedback(isCorrect, question, autoSkip = false) {
     const container = document.getElementById('feedbackContainer');
     const icon = document.getElementById('feedbackIcon');
     const text = document.getElementById('feedbackText');
     const correctDiv = document.getElementById('correctAnswer');
+    const nextBtn = container.querySelector('.next-btn');
 
     container.classList.remove('hidden', 'correct', 'wrong');
     container.classList.add(isCorrect ? 'correct' : 'wrong');
 
     icon.textContent = isCorrect ? '✓' : '✗';
-    text.textContent = isCorrect ? '回答正确！' : '回答错误';
+
+    if (autoSkip) {
+        text.textContent = '回答正确！即将进入下一题...';
+        // 隐藏下一题按钮
+        if (nextBtn) {
+            nextBtn.style.display = 'none';
+        }
+    } else {
+        text.textContent = isCorrect ? '回答正确！' : '回答错误';
+        // 显示下一题按钮
+        if (nextBtn) {
+            nextBtn.style.display = 'block';
+        }
+    }
 
     if (!isCorrect) {
         let correctText = '正确答案：';
@@ -392,6 +427,156 @@ function showPage(pageId) {
         page.classList.remove('active');
     });
     document.getElementById(pageId).classList.add('active');
+}
+
+// ============ 复习模式功能 ============
+
+// 开始随机复习
+function startRandomReview() {
+    reviewMode = 'random';
+    reviewChapter = '随机复习';
+    reviewQuestions = getAllQuestions();
+    shuffleArray(reviewQuestions);
+    reviewQuestionIndex = 0;
+
+    showPage('reviewPage');
+    loadReviewQuestion();
+}
+
+// 开始章节复习
+function startChapterReview(chapter) {
+    reviewMode = 'chapter';
+    reviewChapter = chapter;
+    reviewQuestions = getChapterQuestions(chapter);
+    shuffleArray(reviewQuestions);
+    reviewQuestionIndex = 0;
+
+    showPage('reviewPage');
+    loadReviewQuestion();
+}
+
+// 加载复习题目
+function loadReviewQuestion() {
+    const question = reviewQuestions[reviewQuestionIndex];
+
+    // 更新题目信息
+    const typeNames = {
+        'singleChoice': '单选题',
+        'multipleChoice': '多选题',
+        'judgment': '判断题'
+    };
+    document.getElementById('reviewQuestionType').textContent = typeNames[question.type];
+    document.getElementById('reviewQuestionNumber').textContent =
+        `第 ${reviewQuestionIndex + 1} / ${reviewQuestions.length} 题`;
+    document.getElementById('reviewProgressInfo').textContent =
+        `${reviewQuestionIndex + 1} / ${reviewQuestions.length}`;
+    document.getElementById('reviewChapterTitle').textContent = reviewChapter;
+
+    // 设置题目文本
+    document.getElementById('reviewQuestionText').textContent = question.question;
+
+    // 显示或隐藏图片
+    const imageContainer = document.getElementById('reviewQuestionImage');
+    imageContainer.innerHTML = '';
+
+    if (question.img) {
+        const img = document.createElement('img');
+        img.src = question.img;
+        img.alt = '题目配图';
+        img.onerror = function() {
+            console.warn('图片加载失败:', question.img);
+            this.style.display = 'none';
+        };
+        imageContainer.appendChild(img);
+        imageContainer.style.display = 'block';
+    } else {
+        imageContainer.style.display = 'none';
+    }
+
+    // 渲染选项
+    renderReviewOptions(question);
+
+    // 显示正确答案
+    let answerText = '';
+    if (Array.isArray(question.answer)) {
+        answerText = question.answer.join('、');
+    } else {
+        answerText = question.answer;
+    }
+    document.getElementById('reviewAnswer').textContent = answerText;
+
+    // 显示解析
+    document.getElementById('reviewExplanation').textContent = question.explanation || '暂无解析';
+
+    // 更新导航按钮状态
+    updateReviewNavigation();
+}
+
+// 渲染复习模式的选项
+function renderReviewOptions(question) {
+    const container = document.getElementById('reviewOptionsContainer');
+    container.innerHTML = '';
+
+    // 获取正确答案数组
+    const correctAnswers = Array.isArray(question.answer) ? question.answer : [question.answer];
+
+    question.options.forEach((option, index) => {
+        const optionDiv = document.createElement('div');
+        const letter = String.fromCharCode(65 + index); // A, B, C, D
+        const isCorrect = correctAnswers.includes(letter);
+
+        optionDiv.className = 'review-option';
+        if (isCorrect) {
+            optionDiv.classList.add('correct');
+        }
+
+        const letterSpan = document.createElement('span');
+        letterSpan.className = 'review-option-letter';
+        letterSpan.textContent = letter + '.';
+
+        const textSpan = document.createElement('span');
+        textSpan.className = 'review-option-text';
+        textSpan.textContent = option;
+
+        const checkMark = document.createElement('span');
+        checkMark.className = 'review-check-mark';
+        checkMark.textContent = isCorrect ? '✓' : '';
+
+        optionDiv.appendChild(letterSpan);
+        optionDiv.appendChild(textSpan);
+        optionDiv.appendChild(checkMark);
+        container.appendChild(optionDiv);
+    });
+}
+
+// 更新复习导航按钮状态
+function updateReviewNavigation() {
+    const prevBtn = document.querySelector('.prev-btn');
+    const nextBtn = document.querySelector('.next-btn');
+
+    prevBtn.disabled = reviewQuestionIndex === 0;
+    prevBtn.style.opacity = reviewQuestionIndex === 0 ? '0.5' : '1';
+    prevBtn.style.cursor = reviewQuestionIndex === 0 ? 'not-allowed' : 'pointer';
+
+    nextBtn.disabled = reviewQuestionIndex === reviewQuestions.length - 1;
+    nextBtn.style.opacity = reviewQuestionIndex === reviewQuestions.length - 1 ? '0.5' : '1';
+    nextBtn.style.cursor = reviewQuestionIndex === reviewQuestions.length - 1 ? 'not-allowed' : 'pointer';
+}
+
+// 上一题
+function prevReviewQuestion() {
+    if (reviewQuestionIndex > 0) {
+        reviewQuestionIndex--;
+        loadReviewQuestion();
+    }
+}
+
+// 下一题
+function nextReviewQuestion() {
+    if (reviewQuestionIndex < reviewQuestions.length - 1) {
+        reviewQuestionIndex++;
+        loadReviewQuestion();
+    }
 }
 
 // 页面加载完成后初始化
