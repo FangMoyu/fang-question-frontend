@@ -31,10 +31,10 @@ async function loadVisitCount() {
     const visitCountElement = document.getElementById('visitCount');
 
     try {
-        // 使用免费的计数器API - 基于页面URL生成唯一key
-        const pageKey = btoa(window.location.href).substring(0, 20);
+        // 使用固定的 key 统计全部用户访问次数（不因 URL 变化而分散）
+        const pageKey = 'fang-quiz-neural-network';
 
-        // 先获取当前计数
+        // 获取并增加计数
         const response = await fetch(`https://api.countapi.xyz/hit/${pageKey}/visits`);
         const data = await response.json();
 
@@ -46,18 +46,8 @@ async function loadVisitCount() {
         }
     } catch (error) {
         console.warn('访问计数器加载失败:', error);
-        // 降级方案：使用本地计数
-        loadLocalVisitCount();
+        visitCountElement.textContent = '统计不可用';
     }
-}
-
-// 本地访问计数（降级方案）
-function loadLocalVisitCount() {
-    const visitCountElement = document.getElementById('visitCount');
-    let count = localStorage.getItem('localVisitCount') || 0;
-    count = parseInt(count) + 1;
-    localStorage.setItem('localVisitCount', count);
-    visitCountElement.textContent = count.toLocaleString();
 }
 
 // 数字动画效果
