@@ -965,3 +965,39 @@ body {
         font-size: 2rem;
     }
 }
+
+/* ============ 页脚样式 ============ */
+.footer {
+    text-align: center;
+    padding: 30px 20px;
+    margin-top: 20px;
+}
+
+.github-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 30px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.github-link:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    color: white;
+}
+
+.github-icon {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+}

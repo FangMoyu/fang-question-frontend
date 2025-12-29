@@ -4,7 +4,8 @@
       "Bash(node -c:*)",
       "Bash(powershell:*)",
       "Bash(ls:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(npm run build:*)"
     ]
   }
 }
