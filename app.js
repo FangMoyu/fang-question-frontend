@@ -23,6 +23,64 @@ let typeMode = null; // 'random' 或 'chapter'
 // 初始化应用
 function init() {
     renderChapterList();
+    loadVisitCount();
+}
+
+// 加载访问次数统计
+async function loadVisitCount() {
+    const visitCountElement = document.getElementById('visitCount');
+
+    try {
+        // 使用免费的计数器API - 基于页面URL生成唯一key
+        const pageKey = btoa(window.location.href).substring(0, 20);
+
+        // 先获取当前计数
+        const response = await fetch(`https://api.countapi.xyz/hit/${pageKey}/visits`);
+        const data = await response.json();
+
+        if (data.value !== undefined) {
+            // 使用动画效果显示数字
+            animateNumber(visitCountElement, 0, data.value, 1000);
+        } else {
+            visitCountElement.textContent = '统计中...';
+        }
+    } catch (error) {
+        console.warn('访问计数器加载失败:', error);
+        // 降级方案：使用本地计数
+        loadLocalVisitCount();
+    }
+}
+
+// 本地访问计数（降级方案）
+function loadLocalVisitCount() {
+    const visitCountElement = document.getElementById('visitCount');
+    let count = localStorage.getItem('localVisitCount') || 0;
+    count = parseInt(count) + 1;
+    localStorage.setItem('localVisitCount', count);
+    visitCountElement.textContent = count.toLocaleString();
+}
+
+// 数字动画效果
+function animateNumber(element, start, end, duration) {
+    const startTime = performance.now();
+    const range = end - start;
+
+    function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+
+        // 使用 easeOutQuart 缓动函数
+        const easeProgress = 1 - Math.pow(1 - progress, 4);
+        const current = Math.floor(start + range * easeProgress);
+
+        element.textContent = current.toLocaleString();
+
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        }
+    }
+
+    requestAnimationFrame(update);
 }
 
 // 渲染章节列表

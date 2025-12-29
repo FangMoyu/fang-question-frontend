@@ -42,6 +42,34 @@ body {
     opacity: 0.9;
 }
 
+/* 访问计数器 */
+.visit-counter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+    padding: 12px 24px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 30px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.counter-label {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.counter-value {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    min-width: 40px;
+    text-align: center;
+}
+
 /* Mode Selection */
 .mode-selection {
     background: white;
