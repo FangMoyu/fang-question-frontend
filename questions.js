@@ -408,8 +408,8 @@ const questionsData = {
                 id: 26,
                 question: "CNN网络中池化层的作用有____。",
                 options: ["A. 实现局部特征提取", "B. 减少过拟合", "C. 减少隐层节点数", "D. 压缩特征图"],
-                answer: "C",
-                explanation: "池化层可以减少隐层节点数，降低计算量。"
+                answer: "D",
+                explanation: "D"
             },
             {
                 id: 27,
@@ -417,7 +417,14 @@ const questionsData = {
                 options: ["A. (样本数, 高度, 宽度)", "B. (高度, 宽度)", "C. (样本数, 高度, 宽度, 通道数)", "D. (高度*宽度)"],
                 answer: "C",
                 explanation: "彩色图像的张量格式为(样本数, 高度, 宽度, 通道数)，通道数为3表示RGB。"
-            }
+            },
+            {
+                id: 28,
+                question: "___的网络结构会发生权重共享。",
+                options: ["A. 全连接神经网络", "B. 卷积神经网络", "C. 循环神经网络", "D. 感知机网络"],
+                answer: "B",
+                explanation: "卷积神经网络"
+            },
         ],
         multipleChoice: [
             {
@@ -454,6 +461,13 @@ const questionsData = {
                 options: ["A. 数据集小", "B. 有局部相关性", "C. 数据集大", "D. 没有局部相关性"],
                 answer: ["A", "D"],
                 explanation: "深度学习对数据集小或没有局部相关性的数据集没有明显优势。"
+            },
+            {
+                id: 15,
+                question: "在深度学习建模时，首先建立一个基准模型的意义____。。",
+                options: ["A.验证建模的可行性", "B. 指导模型优化", "C. 没有基准模型，无法建立高级模型", "D. 简化建模过程"],
+                answer: ["A", "B"],
+                explanation: "AB"
             }
         ],
         judgment: [
@@ -1066,6 +1080,20 @@ const questionsData = {
                 options: ["A. 风格图像", "B. 内容图像", "C. 随机图像", "D. 背景图像"],
                 answer: ["A", "B"],
                 explanation: "神经风格迁移将风格图像和内容图像组合在一起。"
+            },
+            {
+                id: 24,
+                question: "访问百度开放服务，需要首先申请获得应用的相关凭证，包括____。",
+                options: ["A. AppID", "B. API Key", "C. Secret Key", "D. UserName"],
+                answer: ["A", "B", "C"],
+                explanation: "ABC"
+            },
+            {
+                id: 25,
+                question: "以下____因素影响神经网络的深度选择。",
+                options: ["A. 训练数据量", "B. 计算力", "C. 神经网络类型", "D. 分类数量"],
+                answer: ["A", "B", "C"],
+                explanation: "ABC"
             }
         ],
         judgment: [
